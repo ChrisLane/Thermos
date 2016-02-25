@@ -172,11 +172,9 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         else if (entity instanceof net.minecraft.entity.item.EntityTNTPrimed) { return new CraftTNTPrimed(server, (net.minecraft.entity.item.EntityTNTPrimed) entity); }
         else if (entity instanceof net.minecraft.entity.item.EntityFireworkRocket) { return new CraftFirework(server, (net.minecraft.entity.item.EntityFireworkRocket) entity); }
         // Cauldron - used for custom entities that extend Entity directly
-        else if (entity instanceof net.minecraft.entity.Entity) {
-            if (entity instanceof net.minecraft.entity.IProjectile) return new thermos.entity.CustomProjectileEntity(server, entity); // Thermos
-            return new CraftCustomEntity(server, (net.minecraft.entity.Entity) entity); }
-	else { return null; }
-        //throw new AssertionError("Unknown entity " + entity == null ? null : entity.getClass() + ": " + entity); // Cauldron - show the entity that caused exception
+        else if (entity instanceof net.minecraft.entity.Entity) { return new CraftCustomEntity(server, (net.minecraft.entity.Entity) entity); }
+
+        throw new AssertionError("Unknown entity " + entity == null ? null : entity.getClass() + ": " + entity); // Cauldron - show the entity that caused exception
     }
 
     // Cauldron start - copy of getEntity() but operates on classes instead of instances, for EntityRegistry registerBukkitType
@@ -415,15 +413,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
             return false;
         }
 
-        // Spigot start
-        net.minecraft.world.WorldServer newWorld = ((CraftWorld) location.getWorld()).getHandle();
-        if (newWorld != entity.worldObj) {
-            entity.teleportTo(location, cause.isPortal());
-            return true;
-        }
-        // Spigot end
+        entity.worldObj = ((CraftWorld) location.getWorld()).getHandle();
         entity.setPositionAndRotation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-	//entity.worldObj.entityJoinedWorld(entity, false); // PaperSpigot - Prevent Server from thinking a player teleporting within the world has joined the world
         // entity.setLocation() throws no event, and so cannot be cancelled
         return true;
     }

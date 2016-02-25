@@ -149,14 +149,14 @@
                  return false;
              }
          }
-@@ -427,11 +526,71 @@
+@@ -427,11 +526,70 @@
          if (itemstack != null && func_145890_b(p_145892_1_, itemstack, p_145892_2_, p_145892_3_))
          {
              ItemStack itemstack1 = itemstack.copy();
 -            ItemStack itemstack2 = func_145889_a(p_145892_0_, p_145892_1_.decrStackSize(p_145892_2_, 1), -1);
 +            // CraftBukkit start - Call event on collection of items from inventories into the hopper
 +            CraftItemStack oitemstack = CraftItemStack.asCraftMirror(p_145892_1_.decrStackSize(p_145892_2_, 1));
-+            Inventory sourceInventory = null;
++            Inventory sourceInventory;
  
 +            // Have to special case large chests as they work oddly
 +            if (p_145892_1_ instanceof InventoryLargeChest)
@@ -182,7 +182,6 @@
 +                {
 +                    sourceInventory = null;
 +                }
-+                finally { if (sourceInventory == null) { sourceInventory = new thermos.CraftInventoryWrapper(p_145892_1_); } }
 +                // Cauldron end
 +            }
 +
@@ -223,7 +222,7 @@
                  return true;
              }
  
-@@ -451,6 +610,20 @@
+@@ -451,6 +609,20 @@
          }
          else
          {

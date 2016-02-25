@@ -375,10 +375,9 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static PlayerDeathEvent callPlayerDeathEvent(net.minecraft.entity.player.EntityPlayerMP victim, List<org.bukkit.inventory.ItemStack> drops, String deathMessage, boolean keepInventory) {
+    public static PlayerDeathEvent callPlayerDeathEvent(net.minecraft.entity.player.EntityPlayerMP victim, List<org.bukkit.inventory.ItemStack> drops, String deathMessage) {
         CraftPlayer entity = victim.getBukkitEntity();
         PlayerDeathEvent event = new PlayerDeathEvent(entity, drops, victim.getExpReward(), 0, deathMessage);
-        event.setKeepInventory(keepInventory);
         //org.bukkit.World world = entity.getWorld();
         Bukkit.getServer().getPluginManager().callEvent(event);
 
@@ -387,7 +386,6 @@ public class CraftEventFactory {
         victim.newTotalExp = event.getNewTotalExp();
         victim.expToDrop = event.getDroppedExp();
         victim.newExp = event.getNewExp();
-        if (event.getKeepInventory()) return event;
         victim.capturedDrops.clear(); // Cauldron - we must clear pre-capture to avoid duplicates
 
         for (org.bukkit.inventory.ItemStack stack : event.getDrops()) {
@@ -446,10 +444,9 @@ public class CraftEventFactory {
         } else if (source instanceof EntityDamageSource) {
             Entity damager = source.getEntity();
             DamageCause cause = DamageCause.ENTITY_ATTACK;
-            Entity indirect = null;
+
             if (source instanceof net.minecraft.util.EntityDamageSourceIndirect) {
-                    indirect = ((net.minecraft.util.EntityDamageSourceIndirect) source).getSourceOfDamage();
-                    damager = ((net.minecraft.util.EntityDamageSourceIndirect) source).getProximateDamageSource();
+                damager = ((net.minecraft.util.EntityDamageSourceIndirect) source).getProximateDamageSource();
                 // Cauldron start - vanilla compatibility
                 if (damager != null) {
                     if (damager.getBukkitEntity() instanceof ThrownPotion) {
@@ -457,9 +454,6 @@ public class CraftEventFactory {
                     } else if (damager.getBukkitEntity() instanceof Projectile) {
                         cause = DamageCause.PROJECTILE;
                     }
-                }
-                if (indirect != null) {
-                    if (indirect instanceof EntityPlayer) { if (cause == null) { cause = DamageCause.ENTITY_ATTACK; damager = indirect; } }
                 }
                 // Cauldron end
             } else if ("thorns".equals(source.damageType)) {

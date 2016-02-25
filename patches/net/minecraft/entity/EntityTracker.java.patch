@@ -8,26 +8,15 @@
  
  import cpw.mods.fml.common.registry.EntityRegistry;
  
-@@ -45,8 +46,8 @@
- {
+@@ -46,7 +47,7 @@
      private static final Logger logger = LogManager.getLogger();
      private final WorldServer theWorld;
--    private Set trackedEntities = new HashSet();
+     private Set trackedEntities = new HashSet();
 -    private IntHashMap trackedEntityIDs = new IntHashMap();
-+    private Set<EntityTrackerEntry> trackedEntities = new HashSet<EntityTrackerEntry>();
 +    public IntHashMap trackedEntityIDs = new IntHashMap(); // CraftBukkit - private -> public
      private int entityViewDistance;
      private static final String __OBFID = "CL_00001431";
  
-@@ -73,7 +74,7 @@
-             {
-                 EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry)iterator.next();
- 
--                if (entitytrackerentry.myEntity != entityplayermp)
-+                if (entitytrackerentry != null && entitytrackerentry.myEntity != entityplayermp)
-                 {
-                     entitytrackerentry.tryStartWachingThis(entityplayermp);
-                 }
 @@ -184,6 +185,7 @@
  
      public void addEntityToTracker(Entity p_72785_1_, int p_72785_2_, final int p_72785_3_, boolean p_72785_4_)
@@ -36,68 +25,3 @@
          if (p_72785_2_ > this.entityViewDistance)
          {
              p_72785_2_ = this.entityViewDistance;
-@@ -223,7 +225,9 @@
-             });
-             p_72785_1_.addEntityCrashInfo(crashreportcategory);
-             CrashReportCategory crashreportcategory1 = crashreport.makeCategory("Entity That Is Already Tracked");
-+            try {
-             ((EntityTrackerEntry)this.trackedEntityIDs.lookup(p_72785_1_.getEntityId())).myEntity.addEntityCrashInfo(crashreportcategory1);
-+            } catch(Exception ignored) {}
- 
-             try
-             {
-@@ -246,6 +250,7 @@
-             while (iterator.hasNext())
-             {
-                 EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry)iterator.next();
-+                if (entitytrackerentry != null)
-                 entitytrackerentry.removeFromWatchingList(entityplayermp);
-             }
-         }
-@@ -267,12 +272,14 @@
-         while (iterator.hasNext())
-         {
-             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry)iterator.next();
-+            if (entitytrackerentry != null) {
-             entitytrackerentry.sendLocationToAllClients(this.theWorld.playerEntities);
- 
-             if (entitytrackerentry.playerEntitiesUpdated && entitytrackerentry.myEntity instanceof EntityPlayerMP)
-             {
-                 arraylist.add((EntityPlayerMP)entitytrackerentry.myEntity);
-             }
-+            }
-         }
- 
-         for (int i = 0; i < arraylist.size(); ++i)
-@@ -284,12 +291,13 @@
-             {
-                 EntityTrackerEntry entitytrackerentry1 = (EntityTrackerEntry)iterator1.next();
- 
--                if (entitytrackerentry1.myEntity != entityplayermp)
-+                if (entitytrackerentry1 != null && entitytrackerentry1.myEntity != entityplayermp)
-                 {
-                     entitytrackerentry1.tryStartWachingThis(entityplayermp);
-                 }
-             }
-         }
-+        //((pw.prok.imagine.collections.Indirect) trackedEntities).compat(theWorld.getTotalWorldTime() % 100 == 0);
-     }
- 
-     public void func_151247_a(Entity p_151247_1_, Packet p_151247_2_)
-@@ -319,6 +327,7 @@
-         while (iterator.hasNext())
-         {
-             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry)iterator.next();
-+            if (entitytrackerentry != null)
-             entitytrackerentry.removePlayerFromTracker(p_72787_1_);
-         }
-     }
-@@ -331,7 +340,7 @@
-         {
-             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry)iterator.next();
- 
--            if (entitytrackerentry.myEntity != p_85172_1_ && entitytrackerentry.myEntity.chunkCoordX == p_85172_2_.xPosition && entitytrackerentry.myEntity.chunkCoordZ == p_85172_2_.zPosition)
-+            if (entitytrackerentry != null && entitytrackerentry.myEntity != p_85172_1_ && entitytrackerentry.myEntity.chunkCoordX == p_85172_2_.xPosition && entitytrackerentry.myEntity.chunkCoordZ == p_85172_2_.zPosition)
-             {
-                 entitytrackerentry.tryStartWachingThis(p_85172_1_);
-             }

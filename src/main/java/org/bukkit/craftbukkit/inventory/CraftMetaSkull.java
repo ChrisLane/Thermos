@@ -12,11 +12,6 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-// PaperSpigot start
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-// PaperSpigot end
-
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap.Builder;
 
@@ -102,16 +97,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         if (name == null) {
             profile = null;
         } else {
-            // PaperSpigot - Check usercache if the player is online
-	    EntityPlayer player = null;
-	    for(Object o : MinecraftServer.getServer().getConfigurationManager().playerEntityList)
-	    {
-		if(!(o instanceof EntityPlayer)) { continue; }
-                EntityPlayer ep = (EntityPlayer)o;
-		if(ep.getCommandSenderName().equals(name)) { player = ep; break; }
-            }
-            profile = player != null ? player.getGameProfile() : new GameProfile(null, name);
-	    // PaperSpigot end
+            profile = new GameProfile(null, name);
         }
 
         return true;

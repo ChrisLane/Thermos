@@ -140,7 +140,7 @@ import jline.console.ConsoleReader;
 
 public final class CraftServer implements Server {
     private static final Player[] EMPTY_PLAYER_ARRAY = new Player[0];
-    private final String serverName = "Cauldron"; // Cauldron - temporarily keep MCPC-Plus name until plugins adapt
+    private final String serverName = "Cauldron-MCPC-Plus"; // Cauldron - temporarily keep MCPC-Plus name until plugins adapt
     private final String serverVersion;
     private final String bukkitVersion = Versioning.getBukkitVersion();
     private final Logger logger = Logger.getLogger("Minecraft");
@@ -452,7 +452,7 @@ public final class CraftServer implements Server {
 
     @Override
     public List<CraftPlayer> getOnlinePlayers() {
-        return ImmutableList.copyOf(this.playerView);
+        return this.playerView;
     }
 
     @Override
@@ -1150,7 +1150,7 @@ public final class CraftServer implements Server {
 
     @Override
     public Map<String, String[]> getCommandAliases() {
-        ConfigurationSection section = commandsConfiguration.getConfigurationSection("aliases");
+        ConfigurationSection section = configuration.getConfigurationSection("aliases");
         Map<String, String[]> result = new LinkedHashMap<String, String[]>();
 
         if (section != null) {
@@ -1304,11 +1304,8 @@ public final class CraftServer implements Server {
 
         OfflinePlayer result = getPlayerExact(name);
             if (result == null) {
-            // Spigot start
-            GameProfile profile = null;
-            if (MinecraftServer.getServer().isServerInOnlineMode() || org.spigotmc.SpigotConfig.bungee) {
-                profile = MinecraftServer.getServer().func_152358_ax().func_152655_a(name);
-            }
+            // This is potentially blocking :(
+            GameProfile profile = MinecraftServer.getServer().func_152358_ax().func_152655_a(name);
             if (profile == null) {
                 // Make an OfflinePlayer using an offline mode UUID since the name has no profile
                 result = getOfflinePlayer(new GameProfile(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8)), name));

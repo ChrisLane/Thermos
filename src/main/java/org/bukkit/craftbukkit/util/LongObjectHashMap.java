@@ -205,9 +205,16 @@ public class LongObjectHashMap<V> implements Cloneable, Serializable {
      * this reason it should be avoided if at all possible.
      *
      * @return Set of Entry objects
+     * @deprecated
      */
+    @Deprecated
     public Set<Map.Entry<Long, V>> entrySet() {
-        return new EntrySet();
+        HashSet<Map.Entry<Long, V>> set = new HashSet<Map.Entry<Long, V>>();
+        for (long key : keySet()) {
+            set.add(new Entry(key, get(key)));
+        }
+
+        return set;
     }
 
     public Object clone() throws CloneNotSupportedException {
@@ -406,8 +413,13 @@ public class LongObjectHashMap<V> implements Cloneable, Serializable {
 
 
     private class Entry implements Map.Entry<Long, V> {
-        private Long key;
+        private final Long key;
         private V value;
+
+        Entry(long k, V v) {
+            key = k;
+            value = v;
+        }
 
         public Long getKey() {
             return key;
@@ -423,42 +435,5 @@ public class LongObjectHashMap<V> implements Cloneable, Serializable {
             put(key, v);
             return old;
         }
-        
-        private void bind(long key, V value) {
-            this.key = key;
-            this.value = value;    
-        }
-    }
-    
-    private class EntrySet extends AbstractSet<Map.Entry<Long, V>> {
-        @Override
-        public Iterator<Map.Entry<Long, V>> iterator() {
-            return new Iterator<Map.Entry<Long, V>>() {
-                final Entry entry = new Entry();
-                final ValueIterator valueIterator = new ValueIterator();
-                
-                @Override
-                public boolean hasNext() {
-                    return valueIterator.hasNext();
-                }
-
-                @Override
-                public LongObjectHashMap<V>.Entry next() {
-                    V value = valueIterator.next();
-                    entry.bind(valueIterator.prevKey, value);
-                    return entry;
-                }
-
-                @Override
-                public void remove() {
-                    valueIterator.remove();
-                }
-            };
-        }
-
-        @Override
-        public int size() {
-            return LongObjectHashMap.this.size;
-        }        
     }
 }

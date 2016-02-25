@@ -29,7 +29,7 @@
      private ServerEula field_154332_n;
      private boolean canSpawnStructures;
      private WorldSettings.GameType gameType;
-@@ -52,10 +62,13 @@
+@@ -52,9 +62,12 @@
      public static boolean allowPlayerLogins = false;
      private static final String __OBFID = "CL_00001784";
  
@@ -38,14 +38,12 @@
 +    public DedicatedServer(joptsimple.OptionSet options)
      {
 -        super(p_i1508_1_, Proxy.NO_PROXY);
--        Thread thread = new Thread("Server Infinisleeper")
 +        super(options, Proxy.NO_PROXY);
 +        // super(p_i1508_1_, Proxy.NO_PROXY);
 +        // CraftBukkit end
-+        new Thread("Server Infinisleeper")
+         Thread thread = new Thread("Server Infinisleeper")
          {
              private static final String __OBFID = "CL_00001787";
-             {
 @@ -82,31 +95,77 @@
          };
      }
@@ -140,7 +138,7 @@
          this.field_154332_n = new ServerEula(new File("eula.txt"));
  
          if (!this.field_154332_n.func_154346_a())
-@@ -172,6 +231,17 @@
+@@ -172,6 +231,16 @@
                  this.setServerPort(this.settings.getIntProperty("server-port", 25565));
              }
  
@@ -150,15 +148,14 @@
 +            org.spigotmc.SpigotConfig.registerCommands();
 +            // Spigot end
 +            // Cauldron start
-+            thermosConfig.registerCommands();
-+            cauldronConfig.registerCommands();
-+            tileEntityConfig.registerCommands();
++            this.cauldronConfig.registerCommands();
++            this.tileEntityConfig.registerCommands();
 +            // Cauldron end
 +
              field_155771_h.info("Generating keypair");
              this.setKeyPair(CryptManager.createNewKeyPair());
              field_155771_h.info("Starting Minecraft server on " + (this.getServerHostname().length() == 0 ? "*" : this.getServerHostname()) + ":" + this.getServerPort());
-@@ -180,7 +250,7 @@
+@@ -180,7 +249,7 @@
              {
                  this.func_147137_ag().addLanEndpoint(inetaddress, this.getServerPort());
              }
@@ -167,7 +164,7 @@
              {
                  field_155771_h.warn("**** FAILED TO BIND TO PORT!");
                  field_155771_h.warn("The exception was: {}", new Object[] {ioexception.toString()});
-@@ -196,10 +266,17 @@
+@@ -196,10 +265,17 @@
                  field_155771_h.warn("To change this, set \"online-mode\" to \"true\" in the server.properties file.");
              }
  
@@ -187,7 +184,7 @@
  
              if (!PreYggdrasilConverter.func_152714_a(this.settings))
              {
-@@ -208,7 +285,8 @@
+@@ -208,7 +284,8 @@
              else
              {
                  FMLCommonHandler.instance().onServerStarted();
@@ -197,7 +194,7 @@
                  long j = System.nanoTime();
  
                  if (this.getFolderName() == null)
-@@ -274,11 +352,30 @@
+@@ -274,11 +351,30 @@
                      this.theRConThreadMain.startThread();
                  }
  
@@ -228,7 +225,7 @@
      public boolean canStructuresSpawn()
      {
          return this.canSpawnStructures;
-@@ -364,11 +461,19 @@
+@@ -364,11 +460,19 @@
  
      public void executePendingCommands()
      {

@@ -278,31 +278,4 @@ public class SpigotWorldConfig
         maxCollisionsPerEntity = getInt( "max-entity-collisions", 8 );
         log( "Max Entity Collisions: " + maxCollisionsPerEntity );
     }
-    
-    public final int tileMaxTickTime = 1000;
-    public final int entityMaxTickTime = 1000;
-    private void maxTickTimes()
-    {
-        //tileMaxTickTime = getInt("max-tick-time.tile", 50);
-        //entityMaxTickTime = getInt("max-tick-time.entity", 50);
-        log("Tile Max Tick Time: " + tileMaxTickTime + "ms Entity max Tick Time: " + entityMaxTickTime + "ms");
-    }
-
-    public int currentPrimedTnt = 0;
-    public int maxTntTicksPerTick;
-    private void maxTntPerTick() {
-        if ( SpigotConfig.version < 7 )
-        {
-            set( "max-tnt-per-tick", 100 );
-        }
-        maxTntTicksPerTick = getInt( "max-tnt-per-tick", 100 );
-        log( "Max TNT Explosions: " + maxTntTicksPerTick );
-    }
-
-    public boolean useAsyncLighting;
-    private void useAsyncLighting()
-    {
-        useAsyncLighting = getBoolean( "use-async-lighting", true );
-        log( "World async lighting: " + useAsyncLighting );
-    }
 }

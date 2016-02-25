@@ -59,7 +59,7 @@ public class CraftBlock implements Block {
         this.chunk = chunk;
     }
 
-    public net.minecraft.block.Block getNMSBlock() {
+    private net.minecraft.block.Block getNMSBlock() {
         return CraftMagicNumbers.getBlock(this); // TODO: UPDATE THIS
     }
 

@@ -12,12 +12,7 @@
  public class ItemMap extends ItemMapBase
  {
      private static final String __OBFID = "CL_00000047";
-@@ -56,10 +61,14 @@
-             mapdata.scale = 3;
-             int i = 128 * (1 << mapdata.scale);
-             mapdata.xCenter = Math.round((float)p_77873_2_.getWorldInfo().getSpawnX() / (float)i) * i;
--            mapdata.zCenter = Math.round((float)(p_77873_2_.getWorldInfo().getSpawnZ() / i)) * i;
-+            mapdata.zCenter = Math.round((float) p_77873_2_.getWorldInfo().getSpawnZ() / (float)i) * i;
+@@ -60,6 +65,10 @@
              mapdata.dimension = p_77873_2_.provider.dimensionId;
              mapdata.markDirty();
              p_77873_2_.setItemData(s, mapdata);

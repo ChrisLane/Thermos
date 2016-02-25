@@ -33,10 +33,8 @@ import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 
-import org.bukkit.craftbukkit.util.LongHash;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
 import com.google.gson.stream.JsonWriter;
@@ -283,21 +281,6 @@ public class CauldronHooks
         if (tileEntity == null || world.tileentityConfig == null) return false;
         if (MinecraftServer.tileEntityConfig.skipTileEntityTicks.getValue())
         {
-        	if(world.chunkProvider instanceof ChunkProviderServer) // Thermos - allow the server to tick tiles that are trying to unload
-        	{
-        		ChunkProviderServer cps = ((ChunkProviderServer)world.chunkProvider);
-        		if(cps.chunksToUnload.contains(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4))
-        		{
-        			Chunk c = cps.getChunkIfLoaded(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4);
-        			if(c != null)
-        			{
-        				if(c.lastAccessedTick < 2L)
-        				{
-        					return true;
-        				}
-        			}
-        		}
-        	}
             TileEntityCache teCache = tileEntityCache.get(tileEntity.getClass());
             if (teCache == null)
             {

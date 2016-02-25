@@ -125,7 +125,7 @@
          this.playerEntity = p_i1530_3_;
          p_i1530_3_.playerNetServerHandler = this;
 +        // CraftBukkit start
-+        this.server = p_i1530_1_ == null ? null : p_i1530_1_.server;
++        this.server = p_i1530_1_.server;
      }
  
 +    private final org.bukkit.craftbukkit.CraftServer server;
@@ -156,7 +156,7 @@
 +    }
 +
 +    private final static HashSet<Integer> invalidItems = new HashSet<Integer>(java.util.Arrays.asList(8, 9, 10, 11, 26, 34, 36, 43, 51, 52, 55, 59, 60, 62, 63,
-+            64, 68, 71, 74, 75, 83, 90, 92, 93, 94, 104, 105, 115, 117, 118, 119, 125, 127, 132, 140, 141, 142, 144)); // TODO: Check after every update.
++            64, 68, 71, 74, 75, 83, 90, 92, 93, 94, 104, 105, 115, 117, 118, 119, 125, 127, 132, 137, 140, 141, 142, 144)); // TODO: Check after every update.
 +    // CraftBukkit end
 +
      public void onNetworkTick()
@@ -231,7 +231,7 @@
          WorldServer worldserver = this.serverController.worldServerForDimension(this.playerEntity.dimension);
          this.field_147366_g = true;
  
-@@ -199,8 +323,72 @@
+@@ -199,8 +323,78 @@
                  }
              }
  
@@ -260,42 +260,48 @@
 +            double delta = Math.pow(this.lastPosX - to.getX(), 2) + Math.pow(this.lastPosY - to.getY(), 2) + Math.pow(this.lastPosZ - to.getZ(), 2);
 +            float deltaAngle = Math.abs(this.lastYaw - to.getYaw()) + Math.abs(this.lastPitch - to.getPitch());
 +
-+            if ((delta > 2f / 256 || deltaAngle > 10f) && (this.hasMoved && !this.playerEntity.isDead))
++            if ((delta > 1f / 256 || deltaAngle > 10f) && (this.hasMoved && !this.playerEntity.isDead))
 +            {
-+                if(this.lastPosX == to.getX() && this.lastPosY == to.getY() && this.lastPosZ == to.getZ() && this.lastYaw == to.getYaw() && this.lastPitch == to.getPitch()) return;
 +                this.lastPosX = to.getX();
 +                this.lastPosY = to.getY();
 +                this.lastPosZ = to.getZ();
 +                this.lastYaw = to.getYaw();
 +                this.lastPitch = to.getPitch();
 +
-+                Location oldTo = to.clone();
-+                PlayerMoveEvent event = new PlayerMoveEvent(player, from, to);
-+                this.server.getPluginManager().callEvent(event);
-+
-+                // If the event is cancelled we move the player back to their old location.
-+                if (event.isCancelled())
++                // Skip the first time we do this
++                if (hasMoved) // Spigot - Better Check!
 +                {
-+                    this.playerEntity.playerNetServerHandler.sendPacket(new S08PacketPlayerPosLook(from.getX(), from.getY() + 1.6200000047683716D, from
-+                            .getZ(), from.getYaw(), from.getPitch(), false));
-+                    return;
++                    PlayerMoveEvent event = new PlayerMoveEvent(player, from, to);
++                    this.server.getPluginManager().callEvent(event);
++
++                    // If the event is cancelled we move the player back to their old location.
++                    if (event.isCancelled())
++                    {
++                        this.playerEntity.playerNetServerHandler.sendPacket(new S08PacketPlayerPosLook(from.getX(), from.getY() + 1.6200000047683716D, from
++                                .getZ(), from.getYaw(), from.getPitch(), false));
++                        return;
++                    }
++
++                    /* If a Plugin has changed the To destination then we teleport the Player
++                    there to avoid any 'Moved wrongly' or 'Moved too quickly' errors.
++                    We only do this if the Event was not cancelled. */
++                    if (!to.equals(event.getTo()) && !event.isCancelled())
++                    {
++                        this.playerEntity.getBukkitEntity().teleport(event.getTo(), PlayerTeleportEvent.TeleportCause.UNKNOWN);
++                        return;
++                    }
++
++                    /* Check to see if the Players Location has some how changed during the call of the event.
++                    This can happen due to a plugin teleporting the player instead of using .setTo() */
++                    if (!from.equals(this.getPlayerB().getLocation()) && this.justTeleported)
++                    {
++                        this.justTeleported = false;
++                        return;
++                    }
 +                }
-+
-+                /* If a Plugin has changed the To destination then we teleport the Player
-+                there to avoid any 'Moved wrongly' or 'Moved too quickly' errors.
-+                We only do this if the Event was not cancelled. */
-+                if (!oldTo.equals(event.getTo()) && !event.isCancelled())
++                else
 +                {
-+                    this.playerEntity.getBukkitEntity().teleport(event.getTo(), PlayerTeleportEvent.TeleportCause.UNKNOWN);
-+                    return;
-+                }
-+
-+                /* Check to see if the Players Location has some how changed during the call of the event.
-+                This can happen due to a plugin teleporting the player instead of using .setTo() */
-+                if (!from.equals(this.getPlayerB().getLocation()) && this.justTeleported)
-+                {
-+                    this.justTeleported = false;
-+                    return;
++                    hasMoved = true; // Spigot - Better Check!
 +                }
 +            }
 +
@@ -305,7 +311,7 @@
                  double d1;
                  double d2;
                  double d3;
-@@ -280,13 +468,6 @@
+@@ -280,13 +474,6 @@
                      d3 = p_147347_1_.func_149472_e();
                      d4 = p_147347_1_.func_149471_f() - p_147347_1_.func_149467_d();
  
@@ -319,7 +325,7 @@
                      if (Math.abs(p_147347_1_.func_149464_c()) > 3.2E7D || Math.abs(p_147347_1_.func_149472_e()) > 3.2E7D)
                      {
                          this.kickPlayerFromServer("Illegal position");
-@@ -318,7 +499,7 @@
+@@ -318,7 +505,7 @@
                  double d9 = Math.max(Math.abs(d6), Math.abs(this.playerEntity.motionZ));
                  double d10 = d7 * d7 + d8 * d8 + d9 * d9;
  
@@ -328,7 +334,7 @@
                  {
                      logger.warn(this.playerEntity.getCommandSenderName() + " moved too quickly! " + d4 + "," + d5 + "," + d6 + " (" + d7 + ", " + d8 + ", " + d9 + ")");
                      this.setPlayerLocation(this.lastPosX, this.lastPosY, this.lastPosZ, this.playerEntity.rotationYaw, this.playerEntity.rotationPitch);
-@@ -413,21 +594,85 @@
+@@ -413,21 +600,85 @@
  
      public void setPlayerLocation(double p_147364_1_, double p_147364_3_, double p_147364_5_, float p_147364_7_, float p_147364_8_)
      {
@@ -354,12 +360,12 @@
 +        f1 = dest.getPitch();
 +
 +        // TODO: make sure this is the best way to address this.
-+        if (Float.isNaN(f) || Float.isInfinite(f))
++        if (Float.isNaN(f))
 +        {
 +            f = 0;
 +        }
 +
-+        if (Float.isNaN(f1) || Float.isInfinite(f1))
++        if (Float.isNaN(f1))
 +        {
 +            f1 = 0;
 +        }
@@ -419,7 +425,7 @@
              this.playerEntity.dropOneItem(false);
          }
          else if (p_147345_1_.func_149506_g() == 3)
-@@ -490,7 +735,17 @@
+@@ -490,7 +741,17 @@
                  }
                  else
                  {
@@ -437,7 +443,7 @@
                  }
              }
              else if (p_147345_1_.func_149506_g() == 2)
-@@ -517,6 +772,34 @@
+@@ -517,6 +778,34 @@
      public void processPlayerBlockPlacement(C08PacketPlayerBlockPlacement p_147346_1_)
      {
          WorldServer worldserver = this.serverController.worldServerForDimension(this.playerEntity.dimension);
@@ -472,17 +478,18 @@
          ItemStack itemstack = this.playerEntity.inventory.getCurrentItem();
          boolean flag = false;
          boolean placeResult = true;
-@@ -532,12 +815,20 @@
-             {
+@@ -533,11 +822,21 @@
                  return;
              }
-+            org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.playerEntity, Action.RIGHT_CLICK_AIR, itemstack);
-+            PlayerInteractEvent forgeEvent = ForgeEventFactory.onPlayerBukkitInteract(playerEntity, PlayerInteractEvent.Action.RIGHT_CLICK_AIR, 0, 0, 0, -1, worldserver, null); // Cauldron - rename event
-+            // CraftBukkit start
-+            int itemstackAmount = itemstack.stackSize;
  
 -            PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(playerEntity, PlayerInteractEvent.Action.RIGHT_CLICK_AIR, 0, 0, 0, -1, worldserver);
 -            if (event.useItem != Event.Result.DENY)
++            PlayerInteractEvent forgeEvent = ForgeEventFactory.onPlayerInteract(playerEntity, PlayerInteractEvent.Action.RIGHT_CLICK_AIR, 0, 0, 0, -1,
++                    worldserver); // Cauldron - rename event
++            // CraftBukkit start
++            int itemstackAmount = itemstack.stackSize;
++            org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.playerEntity, Action.RIGHT_CLICK_AIR, itemstack);
++
 +            if (forgeEvent.useItem != cpw.mods.fml.common.eventhandler.Event.Result.DENY && event.useItemInHand() != Event.Result.DENY)
              {
                  this.playerEntity.theItemInWorldManager.tryUseItem(this.playerEntity, worldserver, itemstack);
@@ -495,7 +502,7 @@
          }
          else if (p_147346_1_.func_149571_d() >= this.serverController.getBuildLimit() - 1 && (p_147346_1_.func_149568_f() == 1 || p_147346_1_.func_149571_d() >= this.serverController.getBuildLimit()))
          {
-@@ -548,17 +839,24 @@
+@@ -548,17 +847,24 @@
          }
          else
          {
@@ -528,16 +535,16 @@
              flag = true;
          }
  
-@@ -615,7 +913,7 @@
+@@ -615,7 +921,7 @@
              this.playerEntity.openContainer.detectAndSendChanges();
              this.playerEntity.isChangingQuantityOnly = false;
  
 -            if (!ItemStack.areItemStacksEqual(this.playerEntity.inventory.getCurrentItem(), p_147346_1_.func_149574_g()) || !placeResult) // force client itemstack update if place event was cancelled
-+            if (slot != null && (!ItemStack.areItemStacksEqual(this.playerEntity.inventory.getCurrentItem(), p_147346_1_.func_149574_g()) || !placeResult)) // Cauldron - always is needed to update client itemstack if placement is cancelled
++            if (!ItemStack.areItemStacksEqual(this.playerEntity.inventory.getCurrentItem(), p_147346_1_.func_149574_g()) || !placeResult) // Cauldron - always is needed to update client itemstack if placement is cancelled
              {
                  this.sendPacket(new S2FPacketSetSlot(this.playerEntity.openContainer.windowId, slot.slotNumber, this.playerEntity.inventory.getCurrentItem()));
              }
-@@ -624,14 +922,34 @@
+@@ -624,14 +930,34 @@
  
      public void onDisconnect(IChatComponent p_147231_1_)
      {
@@ -577,7 +584,7 @@
          if (this.serverController.isSinglePlayer() && this.playerEntity.getCommandSenderName().equals(this.serverController.getServerOwner()))
          {
              logger.info("Stopping singleplayer server as player logged out");
-@@ -657,6 +975,18 @@
+@@ -657,6 +983,18 @@
              }
          }
  
@@ -596,7 +603,7 @@
          try
          {
              this.netManager.scheduleOutboundPacket(p_147359_1_, new GenericFutureListener[0]);
-@@ -679,20 +1009,37 @@
+@@ -679,20 +1017,37 @@
  
      public void processHeldItemChange(C09PacketHeldItemChange p_147355_1_)
      {
@@ -635,7 +642,7 @@
          {
              ChatComponentTranslation chatcomponenttranslation = new ChatComponentTranslation("chat.cannotSend", new Object[0]);
              chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.RED);
-@@ -708,51 +1055,385 @@
+@@ -708,51 +1063,385 @@
              {
                  if (!ChatAllowedCharacters.isAllowedCharacter(s.charAt(i)))
                  {
@@ -960,7 +967,7 @@
 +            float f6 = MathHelper.sin(-f1 * 0.017453292F);
 +            float f7 = f4 * f5;
 +            float f8 = f3 * f5;
-+            double d3 = this.playerEntity.capabilities.isCreativeMode ? 5.0D : 4.5D;
++            double d3 = 5.0D;
 +            Vec3 vec31 = vec3.addVector((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
 +            MovingObjectPosition movingobjectposition = this.playerEntity.worldObj.rayTraceBlocks(vec3, vec31, true);
 +            boolean valid = false;
@@ -1033,7 +1040,7 @@
          if (p_147357_1_.func_149513_d() == 1)
          {
              this.playerEntity.setSneaking(true);
-@@ -772,7 +1453,7 @@
+@@ -772,7 +1461,7 @@
          else if (p_147357_1_.func_149513_d() == 3)
          {
              this.playerEntity.wakeUpPlayer(false, true, true);
@@ -1042,7 +1049,7 @@
          }
          else if (p_147357_1_.func_149513_d() == 6)
          {
-@@ -789,8 +1470,20 @@
+@@ -789,8 +1478,20 @@
  
      public void processUseEntity(C02PacketUseEntity p_147340_1_)
      {
@@ -1064,7 +1071,7 @@
          this.playerEntity.func_143004_u();
  
          if (entity != null)
-@@ -805,9 +1498,53 @@
+@@ -805,9 +1506,53 @@
  
              if (this.playerEntity.getDistanceSqToEntity(entity) < d0)
              {
@@ -1118,7 +1125,7 @@
                  }
                  else if (p_147340_1_.func_149565_c() == C02PacketUseEntity.Action.ATTACK)
                  {
-@@ -819,6 +1556,13 @@
+@@ -819,6 +1564,13 @@
                      }
  
                      this.playerEntity.attackTargetEntityWithCurrentItem(entity);
@@ -1132,7 +1139,7 @@
                  }
              }
          }
-@@ -834,8 +1578,19 @@
+@@ -834,8 +1586,19 @@
              case 1:
                  if (this.playerEntity.playerConqueredTheEnd)
                  {
@@ -1141,28 +1148,19 @@
 +                if (this.playerEntity.dimension == 1) // coming from end
 +                {
 +                    // We really should be calling transferPlayerToDimension since the player is coming in contact with a portal.
-+                	this.serverController.getConfigurationManager().respawnPlayer(this.playerEntity, 0, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL, null); // set flag to indicate player is leaving end.                }
++                    this.serverController.getConfigurationManager().respawnPlayer(this.playerEntity, 0, true); // set flag to indicate player is leaving end.
                  }
 +                else
 +                // not coming from end
 +                {
-+                	this.playerEntity = this.serverController.getConfigurationManager().respawnPlayer(this.playerEntity, 0, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.NETHER_PORTAL, null);
++                    this.playerEntity = this.serverController.getConfigurationManager().respawnPlayer(this.playerEntity, 0, false);
 +                }
 +                // Cauldron end
 +                }
                  else if (this.playerEntity.getServerForPlayer().getWorldInfo().isHardcoreModeEnabled())
                  {
                      if (this.serverController.isSinglePlayer() && this.playerEntity.getCommandSenderName().equals(this.serverController.getServerOwner()))
-@@ -857,7 +1612,7 @@
-                         return;
-                     }
- 
--                    this.playerEntity = this.serverController.getConfigurationManager().respawnPlayer(this.playerEntity, playerEntity.dimension, false);
-+                    this.playerEntity = this.serverController.getConfigurationManager().respawnPlayer(this.playerEntity, playerEntity.dimension, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.DEATH, null);
-                 }
- 
-                 break;
-@@ -871,17 +1626,461 @@
+@@ -871,17 +1634,461 @@
  
      public void processCloseWindow(C0DPacketCloseWindow p_147356_1_)
      {
@@ -1625,7 +1623,7 @@
              if (ItemStack.areItemStacksEqual(p_147351_1_.func_149546_g(), itemstack))
              {
                  this.playerEntity.playerNetServerHandler.sendPacket(new S32PacketConfirmTransaction(p_147351_1_.func_149548_c(), p_147351_1_.func_149547_f(), true));
-@@ -903,6 +2102,12 @@
+@@ -903,6 +2110,12 @@
                  }
  
                  this.playerEntity.sendContainerAndContentsToPlayer(this.playerEntity.openContainer, arraylist);
@@ -1638,7 +1636,7 @@
              }
          }
      }
-@@ -925,9 +2130,61 @@
+@@ -925,9 +2138,61 @@
              boolean flag = p_147344_1_.func_149627_c() < 0;
              ItemStack itemstack = p_147344_1_.func_149625_d();
              boolean flag1 = p_147344_1_.func_149627_c() >= 1 && p_147344_1_.func_149627_c() < 36 + InventoryPlayer.getHotbarSize();
@@ -1701,7 +1699,7 @@
              if (flag1 && flag2 && flag3)
              {
                  if (itemstack == null)
-@@ -956,6 +2213,11 @@
+@@ -956,6 +2221,11 @@
  
      public void processConfirmTransaction(C0FPacketConfirmTransaction p_147339_1_)
      {
@@ -1713,7 +1711,7 @@
          Short oshort = (Short)this.field_147372_n.lookup(this.playerEntity.openContainer.windowId);
  
          if (oshort != null && p_147339_1_.func_149533_d() == oshort.shortValue() && this.playerEntity.openContainer.windowId == p_147339_1_.func_149532_c() && !this.playerEntity.openContainer.isPlayerNotUsingContainer(this.playerEntity))
-@@ -966,6 +2228,11 @@
+@@ -966,6 +2236,11 @@
  
      public void processUpdateSign(C12PacketUpdateSign p_147343_1_)
      {
@@ -1725,7 +1723,7 @@
          this.playerEntity.func_143004_u();
          WorldServer worldserver = this.serverController.worldServerForDimension(this.playerEntity.dimension);
  
-@@ -980,6 +2247,7 @@
+@@ -980,6 +2255,7 @@
                  if (!tileentitysign.func_145914_a() || tileentitysign.func_145911_b() != this.playerEntity)
                  {
                      this.serverController.logWarning("Player " + this.playerEntity.getCommandSenderName() + " just tried to change non-editable sign");
@@ -1733,7 +1731,7 @@
                      return;
                  }
              }
-@@ -990,6 +2258,7 @@
+@@ -990,6 +2266,7 @@
              for (j = 0; j < 4; ++j)
              {
                  boolean flag = true;
@@ -1741,7 +1739,7 @@
  
                  if (p_147343_1_.func_149589_f()[j].length() > 15)
                  {
-@@ -1018,7 +2287,29 @@
+@@ -1018,7 +2295,29 @@
                  int k = p_147343_1_.func_149586_d();
                  i = p_147343_1_.func_149585_e();
                  TileEntitySign tileentitysign1 = (TileEntitySign)tileentity;
@@ -1772,7 +1770,7 @@
                  tileentitysign1.markDirty();
                  worldserver.markBlockForUpdate(j, k, i);
              }
-@@ -1041,7 +2332,22 @@
+@@ -1041,7 +2340,22 @@
  
      public void processPlayerAbilities(C13PacketPlayerAbilities p_147348_1_)
      {
@@ -1796,8 +1794,16 @@
      }
  
      public void processTabComplete(C14PacketTabComplete p_147341_1_)
-@@ -1093,16 +2399,18 @@
-                 {
+@@ -1068,7 +2382,6 @@
+         PacketBuffer packetbuffer;
+         ItemStack itemstack;
+         ItemStack itemstack1;
+-
+         if ("MC|BEdit".equals(p_147349_1_.func_149559_c()))
+         {
+             packetbuffer = new PacketBuffer(Unpooled.wrappedBuffer(p_147349_1_.func_149558_e()));
+@@ -1093,16 +2406,18 @@
+ 
                      if (itemstack.getItem() == Items.writable_book && itemstack.getItem() == itemstack1.getItem())
                      {
 -                        itemstack1.setTagInfo("pages", itemstack.getTagCompound().getTagList("pages", 8));
@@ -1819,8 +1825,8 @@
              }
              finally
              {
-@@ -1135,19 +2443,18 @@
- 
+@@ -1135,19 +2450,18 @@
+                 {
                      if (itemstack.getItem() == Items.written_book && itemstack1.getItem() == Items.writable_book)
                      {
 -                        itemstack1.setTagInfo("author", new NBTTagString(this.playerEntity.getCommandSenderName()));
@@ -1845,7 +1851,7 @@
              }
              finally
              {
-@@ -1174,9 +2481,12 @@
+@@ -1174,9 +2488,12 @@
                          ((ContainerMerchant)container).setCurrentRecipeIndex(i);
                      }
                  }
@@ -1859,7 +1865,7 @@
                  }
              }
              else if ("MC|AdvCdm".equals(p_147349_1_.func_149559_c()))
-@@ -1222,9 +2532,12 @@
+@@ -1222,9 +2539,12 @@
                              this.playerEntity.addChatMessage(new ChatComponentTranslation("advMode.setCommand.success", new Object[] {s1}));
                          }
                      }
@@ -1874,7 +1880,7 @@
                      }
                      finally
                      {
-@@ -1257,9 +2570,12 @@
+@@ -1257,9 +2577,12 @@
                              tileentitybeacon.markDirty();
                          }
                      }
@@ -1889,7 +1895,7 @@
                      }
                  }
              }
-@@ -1281,6 +2597,13 @@
+@@ -1281,6 +2604,13 @@
                      containerrepair.updateItemName("");
                  }
              }
@@ -1903,7 +1909,7 @@
          }
      }
  
-@@ -1292,6 +2615,21 @@
+@@ -1292,6 +2622,21 @@
          }
      }
  

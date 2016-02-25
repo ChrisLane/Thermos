@@ -16,15 +16,7 @@
  
      public EntityTNTPrimed(World p_i1729_1_)
      {
-@@ -50,6 +54,7 @@
- 
-     public void onUpdate()
-     {
-+        if (worldObj.spigotConfig.currentPrimedTnt++ > worldObj.spigotConfig.maxTntTicksPerTick) { return; } // Spigot
-         this.prevPosX = this.posX;
-         this.prevPosY = this.posY;
-         this.prevPosZ = this.posZ;
-@@ -68,12 +73,14 @@
+@@ -68,12 +72,14 @@
  
          if (this.fuse-- <= 0)
          {
@@ -41,7 +33,7 @@
          }
          else
          {
-@@ -83,8 +90,19 @@
+@@ -83,8 +89,19 @@
  
      private void explode()
      {
@@ -63,15 +55,3 @@
      }
  
      protected void writeEntityToNBT(NBTTagCompound p_70014_1_)
-@@ -107,4 +125,11 @@
-     {
-         return this.tntPlacedBy;
-     }
-+
-+    // Cauldron start
-+    @Override
-+    public boolean entityProjectileHook() {
-+        return true;
-+    }
-+    // Cauldron end
- }

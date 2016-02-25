@@ -14,7 +14,6 @@ import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.entity.projectile.EntityFireball;
-import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.EntityLiving;
@@ -101,7 +100,6 @@ public class ActivationRange
                 || entity instanceof EntityFireball
                 || entity instanceof EntityWeatherEffect
                 || entity instanceof EntityTNTPrimed
-                || entity instanceof EntityFallingBlock // PaperSpigot - Always tick falling blocks
                 || entity instanceof EntityEnderCrystal
                 || entity instanceof EntityFireworkRocket
                 || entity instanceof EntityVillager

@@ -302,16 +302,7 @@ class CraftMetaItem implements ItemMeta, Repairable {
             int id = 0xffff & ((net.minecraft.nbt.NBTTagCompound) ench.getCompoundTagAt(i)).getShort(ENCHANTMENTS_ID.NBT);
             int level = 0xffff & ((net.minecraft.nbt.NBTTagCompound) ench.getCompoundTagAt(i)).getShort(ENCHANTMENTS_LVL.NBT);
 
-            // Spigot Start - skip invalid enchantments
-            /*
-             * Its a rare case but when loading a world from a modded server which added enchantments
-             * CraftMetaItem would add a null enchantment into the enchantment map which causes
-             * NullPointers later
-             */
-            Enchantment inch = Enchantment.getById(id);
-            if (inch == null) continue;
-            enchantments.put(inch, level);
-            // Spigot end
+            enchantments.put(Enchantment.getById(id), level);
         }
 
         return enchantments;
@@ -388,7 +379,7 @@ class CraftMetaItem implements ItemMeta, Repairable {
     }
 
     static void applyEnchantments(Map<Enchantment, Integer> enchantments, net.minecraft.nbt.NBTTagCompound tag, ItemMetaKey key) {
-        if (enchantments == null /*|| enchantments.size() == 0*/) { // Spigot - remove size check
+        if (enchantments == null || enchantments.size() == 0) {
             return;
         }
 
@@ -479,14 +470,7 @@ class CraftMetaItem implements ItemMeta, Repairable {
     }
 
     public boolean removeEnchant(Enchantment ench) {
-        // Spigot start
-        boolean b = hasEnchants() && enchantments.remove( ench ) != null;
-        if ( enchantments != null && enchantments.isEmpty() )
-        {
-            this.enchantments = null;
-        }
-        return b;
-        // Spigot end
+        return hasEnchants() && enchantments.remove(ench) != null;
     }
 
     public boolean hasEnchants() {

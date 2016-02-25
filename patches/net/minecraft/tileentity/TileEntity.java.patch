@@ -1,6 +1,6 @@
 --- ../src-base/minecraft/net/minecraft/tileentity/TileEntity.java
 +++ ../src-work/minecraft/net/minecraft/tileentity/TileEntity.java
-@@ -22,18 +22,23 @@
+@@ -22,18 +22,22 @@
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
@@ -15,7 +15,6 @@
 -    protected World worldObj;
 +    public static Map classToNameMap = new HashMap(); // Cauldron - private -> public
 +    public World worldObj; // CraftBukkit - protected -> public
-+    private boolean GC = false;
      public int xCoord;
      public int yCoord;
      public int zCoord;
@@ -26,7 +25,7 @@
      private static final String __OBFID = "CL_00000340";
  
      public static void addMapping(Class p_145826_0_, String p_145826_1_)
-@@ -106,7 +111,11 @@
+@@ -106,7 +110,11 @@
          }
          catch (Exception exception)
          {
@@ -39,7 +38,7 @@
          }
  
          if (tileentity != null)
-@@ -282,6 +291,31 @@
+@@ -282,6 +290,20 @@
          addMapping(TileEntityFlowerPot.class, "FlowerPot");
      }
  
@@ -56,17 +55,6 @@
 +        return null;
 +    }
 +    // CraftBukkit end
-+    // KCauldron start
-+    public boolean isGC()
-+    {
-+        return this.GC; //Returns true if the chunk it is inside of has marked it for unloading
-+    }
-+
-+    public void setGC(boolean state)
-+    {
-+        this.GC = state; //Should never be touched by a mod. Would make it package-private but not sure if that would still work
-+    }
-+    // KCauldron end
 +
      // -- BEGIN FORGE PATCHES --
      /**

@@ -54,7 +54,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.player.PlayerUnregisterChannelEvent;
 import org.bukkit.inventory.InventoryView.Property;
 import org.bukkit.map.MapView;
@@ -504,7 +503,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (fromWorld == toWorld) {
             entity.playerNetServerHandler.teleport(to);
         } else {
-            server.getHandle().respawnPlayer(entity, toWorld.dimension, cause, to); // Cauldron
+            server.getHandle().respawnPlayer(entity, toWorld.dimension, false, to); // Cauldron
         }
         return true;
     }
@@ -1325,7 +1324,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         {
             if ( getHealth() <= 0 && isOnline() )
             {
-                server.getServer().getConfigurationManager().respawnPlayer( getHandle(), 0, TeleportCause.DEATH, null );
+                server.getServer().getConfigurationManager().respawnPlayer( getHandle(), 0, false );
             }
         }
 
